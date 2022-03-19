@@ -1,0 +1,26 @@
+kubeProxyReplacement: probe
+
+rollOutCiliumPods: true
+
+tunnel: disabled
+
+ipam:
+  mode: kubernetes
+
+autoDirectNodeRoutes: true
+enableIPv4Masquerade: false
+enableIPv6Masquerade: false
+
+encryption:
+  enabled: true
+  nodeEncryption: false
+  type: ipsec
+
+hubble:
+  relay:
+    enabled: true
+  ui:
+    enabled: true
+
+bpf:
+  masquerade: false

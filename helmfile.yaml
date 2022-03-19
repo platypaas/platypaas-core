@@ -1,0 +1,55 @@
+repositories:
+- name: incubator
+  url: https://charts.helm.sh/incubator
+- name: cilium
+  url: https://helm.cilium.io/
+- name: enix
+  url: https://charts.enix.io/
+- name: bitnami
+  url: https://charts.bitnami.com/bitnami
+
+helmDefaults:
+  atomic: true
+
+templates:
+  default: &default
+    missingFileHandler: Warn
+    values:
+    - config/global.yaml
+    - config/{{`{{ .Release.Name }}`}}/values.yaml
+    - config/{{`{{ .Release.Name }}`}}/envs/{{`{{ .Environment.Name }}`}}/values.yaml
+    - config/{{`{{ .Release.Name }}`}}/platform/{{`{{ requiredEnv "PLATFORM_ENV" }}`}}/values.yaml
+    secrets:
+    - config/{{`{{ .Release.Name }}`}}/secrets.yaml
+    - config/{{`{{ .Release.Name }}`}}/envs/{{`{{ .Environment.Name }}`}}/secrets.yaml
+    - config/{{`{{ .Release.Name }}`}}/platform/{{`{{ requiredEnv "PLATFORM_ENV" }}`}}/secrets.yaml
+
+releases:
+- name: kube-router
+  namespace: kube-system
+  chart: enix/kube-router
+  version: 1.7.0
+  <<: *default
+
+- name: cilium-ipsec-keys
+  namespace: kube-system
+  chart: incubator/raw
+  version: 0.2.4
+  <<: *default
+
+- name: cilium
+  namespace: kube-system
+  chart: cilium/cilium
+  version: 1.11.2
+  <<: *default
+  needs:
+    - kube-system/cilium-ipsec-keys
+    - kube-system/kube-router
+
+- name: metrics-server
+  namespace: kube-system
+  chart: bitnami/metrics-server
+  version: 5.11.4
+  <<: *default
+  needs:
+    - kube-system/cilium

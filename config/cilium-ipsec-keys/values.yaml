@@ -1,0 +1,14 @@
+templates:
+- |
+  apiVersion: v1
+  kind: Secret
+  metadata:
+    name: cilium-ipsec-keys
+  type: Opaque
+  data:
+    # retrieve the secret data using lookup function and when not exists, return an empty dictionary / map as result
+    {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace "cilium-ipsec-keys") | default dict }}
+    {{- $secretData := (get $secretObj "data") | default dict }}
+    # set $keysSecret to existing secret data or generate a random 64 character hex string when not exists
+    {{- $keysSecret := (get $secretData "keys") | default (printf "3 rfc4106(gcm(aes)) %s 128" (regexReplaceAll "[^a-f0-9]" (randAlphaNum 2000 | lower) "" | trunc 64) | b64enc) }}
+    keys: {{ $keysSecret | quote }}

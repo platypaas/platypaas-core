@@ -1,0 +1,4 @@
+image:
+  pullPolicy: &pullPolicy Always
+
+imagePullPolicy: *pullPolicy
