@@ -3,13 +3,14 @@ repositories:
   url: https://charts.helm.sh/incubator
 - name: cilium
   url: https://helm.cilium.io/
-- name: enix
-  url: https://charts.enix.io/
 - name: bitnami
   url: https://charts.bitnami.com/bitnami
+- name: traefik
+  url: https://helm.traefik.io/traefik
 
 helmDefaults:
   atomic: true
+  createNamespace: true
 
 templates:
   default: &default
@@ -25,12 +26,6 @@ templates:
     - config/{{`{{ .Release.Name }}`}}/platform/{{`{{ requiredEnv "PLATFORM_ENV" }}`}}/secrets.yaml
 
 releases:
-- name: kube-router
-  namespace: kube-system
-  chart: enix/kube-router
-  version: 1.7.0
-  <<: *default
-
 - name: cilium-ipsec-keys
   namespace: kube-system
   chart: incubator/raw
@@ -44,12 +39,19 @@ releases:
   <<: *default
   needs:
     - kube-system/cilium-ipsec-keys
-    - kube-system/kube-router
 
 - name: metrics-server
   namespace: kube-system
   chart: bitnami/metrics-server
   version: 5.11.4
+  <<: *default
+  needs:
+    - kube-system/cilium
+
+- name: traefik
+  namespace: traefik
+  chart: traefik/traefik
+  version: 10.15.0
   <<: *default
   needs:
     - kube-system/cilium

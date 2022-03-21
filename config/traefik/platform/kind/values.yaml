@@ -1,0 +1,23 @@
+deployment:
+  replicas: 1
+
+nodeSelector:
+  ingress-ready: "true"
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Equal
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/master
+    operator: Equal
+    effect: NoSchedule
+
+ports:
+  web:
+    nodePort: 30080
+  websecure:
+    nodePort: 30443
+
+logs:
+  access:
+    bufferingSize: 5

@@ -1,2 +1,4 @@
+replicas: 1
+
 extraArgs:
   kubelet-insecure-tls:

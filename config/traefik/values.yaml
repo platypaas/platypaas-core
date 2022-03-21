@@ -1,0 +1,30 @@
+deployment:
+  replicas: 3
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+# log config
+logs:
+  general:
+    format: json
+  access:
+    enabled: true
+    format: json
+    bufferingSize: 100
+
+globalArguments: []
+
+service:
+  type: NodePort
+
+ports:
+  web:
+    nodePort: 30080
+  websecure:
+    nodePort: 30443
