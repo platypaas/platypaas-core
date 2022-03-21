@@ -27,7 +27,7 @@ using:
 ## Answers I can think of
 To questions you might have.
 
-### Where's <service-mesh name>?
+### Where's [service-mesh name]?
 We've made the concsious decision to avoid a service mesh like Istio or Linkerd.
 Experience has led us to realise that you probably don't need a service mesh, we
 generally see them used for:
