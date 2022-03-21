@@ -2,6 +2,8 @@ kubeProxyReplacement: probe
 
 rollOutCiliumPods: true
 
+tunnel: geneve
+
 ipam:
   mode: kubernetes
 
