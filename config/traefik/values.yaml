@@ -1,5 +1,17 @@
 deployment:
   replicas: 3
+  minReadySeconds: 5
+  terminationGracePeriodSeconds: 65
+  additionalVolumes:
+  - name: traefik-proxy-config
+    configMap:
+      name: traefik-proxy-config
+      optional: true
+
+additionalVolumeMounts:
+- name: traefik-proxy-config
+  mountPath: /traefik-proxy-config
+  readOnly: true
 
 ingressClass:
   enabled: true
@@ -9,16 +21,72 @@ podDisruptionBudget:
   enabled: true
   maxUnavailable: 1
 
-# log config
 logs:
   general:
+    level: ERROR
     format: json
   access:
     enabled: true
     format: json
     bufferingSize: 100
+    fields:
+      headers:
+        defaultmode: keep
+        names:
+          Authorization: redact
+          Apikey: redact
+          Cookie: redact
+          X-Apikey: redact
 
-globalArguments: []
+resources:
+  requests:
+    cpu: 2
+    memory: 2Gi
+  limits:
+    cpu: 2
+    memory: 2Gi
+
+globalArguments:
+# Allow access to dashboard without auth
+- --api.insecure=true
+# Graceful shutdown timeouts must be applied to all entrypoints
+- --entrypoints.web.transport.lifecycle.gracetimeout=10
+- --entrypoints.web.transport.lifecycle.requestacceptgracetimeout=60
+- --entrypoints.web.forwardedHeaders.trustedIPs=127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+- --entrypoints.web.proxyProtocol.trustedIPs=127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+- --entrypoints.websecure.transport.lifecycle.gracetimeout=10
+- --entrypoints.websecure.transport.lifecycle.requestacceptgracetimeout=60
+- --entrypoints.websecure.forwardedHeaders.trustedIPs=127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+- --entrypoints.websecure.proxyProtocol.trustedIPs=127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
+- --entrypoints.traefik.transport.lifecycle.gracetimeout=10
+- --entrypoints.traefik.transport.lifecycle.requestacceptgracetimeout=60
+- --entrypoints.metrics.transport.lifecycle.gracetimeout=10
+- --entrypoints.metrics.transport.lifecycle.requestacceptgracetimeout=60
+# Should always be higher than the idleTimeout on a load balancer
+- --entrypoints.web.transport.respondingtimeouts.idletimeout=90
+# Reverse proxy dynamic configurations
+- --providers.file.directory=/traefik-proxy-config/
+- --providers.file.watch=true
+# Tracing configuration - for B3 header propagation from edge
+- --tracing.jaeger=true
+- --tracing.jaeger.samplingType=const
+- --tracing.jaeger.samplingParam=0.0
+- --tracing.jaeger.propagation=b3
+- --tracing.jaeger.gen128Bit=true
+- --tracing.jaeger.disableAttemptReconnecting=true
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - traefik
+        topologyKey: kubernetes.io/hostname
+      weight: 100
 
 service:
   type: NodePort

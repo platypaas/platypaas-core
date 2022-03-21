@@ -18,11 +18,9 @@ templates:
     values:
     - config/global.yaml
     - config/{{`{{ .Release.Name }}`}}/values.yaml
-    - config/{{`{{ .Release.Name }}`}}/envs/{{`{{ .Environment.Name }}`}}/values.yaml
     - config/{{`{{ .Release.Name }}`}}/platform/{{`{{ requiredEnv "PLATFORM_ENV" }}`}}/values.yaml
     secrets:
     - config/{{`{{ .Release.Name }}`}}/secrets.yaml
-    - config/{{`{{ .Release.Name }}`}}/envs/{{`{{ .Environment.Name }}`}}/secrets.yaml
     - config/{{`{{ .Release.Name }}`}}/platform/{{`{{ requiredEnv "PLATFORM_ENV" }}`}}/secrets.yaml
 
 releases:

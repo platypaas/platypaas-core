@@ -12,11 +12,13 @@ tolerations:
     operator: Equal
     effect: NoSchedule
 
-ports:
-  web:
-    nodePort: 30080
-  websecure:
-    nodePort: 30443
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
 
 logs:
   access:
