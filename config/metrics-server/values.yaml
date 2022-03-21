@@ -1,7 +1,24 @@
 replicas: 2
 
+priorityClassName: "system-cluster-critical"
+
 extraArgs:
+  cert-dir: /tmp
   kubelet-preferred-address-types: InternalIP
+  metric-resolution: 15s
+  kubelet-use-node-status-port: null
 
 apiService:
   create: true
+
+tolerations:
+- operator: Exists
+  effect: NoSchedule
+
+extraVolumes:
+- name: tmp-volume
+  emptyDir: {}
+
+extraVolumeMounts:
+- name: tmp-volume
+  mountPath: /tmp
